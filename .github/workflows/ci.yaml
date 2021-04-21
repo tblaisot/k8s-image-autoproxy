@@ -10,7 +10,7 @@ jobs:
     container: golangci/golangci-lint:v1.33.0-alpine
     steps:
       - uses: actions/checkout@v1
-      - run: make ci-check
+      - run: ./scripts/check/check.sh
 
   test:
     name: Test
