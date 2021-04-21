@@ -1,16 +1,12 @@
 package cmd
 
 import (
-	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
+	"k8s.io/api/admission/v1beta1"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-
-	v1beta1 "k8s.io/api/admission/v1beta1"
-	// m "github.com/alex-leonhardt/k8s-mutate-webhook/pkg/mutate"
 )
 
 func TestHandleMutateErrors(t *testing.T) {
@@ -30,5 +26,4 @@ func TestHandleMutateErrors(t *testing.T) {
 	assert.Errorf(t, json.Unmarshal(body, &admReview), "body: %s", string(body))
 
 	assert.Empty(t, admReview.Response)
-
 }

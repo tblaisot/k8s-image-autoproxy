@@ -81,12 +81,14 @@ kind:
 
 .PHONY: deploy
 deploy:
-	kind load docker-image tblaisot/k8s-image-autoproxy:0.0.0 --name test-cluster
+	docker tag tblaisot/k8s-image-autoproxy:$(VERSION) tblaisot/k8s-image-autoproxy:latest
+	kind load docker-image tblaisot/k8s-image-autoproxy:latest --name test-cluster
 	kubectl apply -k deploy/ --context kind-test-cluster
 
 .PHONY: redeploy
 redeploy:
-	kind load docker-image tblaisot/k8s-image-autoproxy:0.0.0 --name test-cluster
+	docker tag tblaisot/k8s-image-autoproxy:$(VERSION) tblaisot/k8s-image-autoproxy:latest
+	kind load docker-image tblaisot/k8s-image-autoproxy:latest --name test-cluster
 	kubectl delete -k deploy/ --context kind-test-cluster
 	kubectl apply -k deploy/ --context kind-test-cluster
 
@@ -99,9 +101,9 @@ reset:
 e2e-tests:
 	echo "Testing Pod"
 	kubectl apply -f integration-tests/pod.yaml --context kind-test-cluster
-	kubectl get pod/c7m --context kind-test-cluster -o yaml | grep image:
+	kubectl get pod/c7m --context kind-test-cluster -o yaml | grep image: || true
 	kubectl delete -f integration-tests/pod.yaml --context kind-test-cluster
 	echo "Testing Deployment"
 	kubectl apply -f integration-tests/deployment.yaml --context kind-test-cluster
-	kubectl get deployment/c7m --context kind-test-cluster -o yaml  | grep image:
+	kubectl get deployment/c7m --context kind-test-cluster -o yaml  | grep image: || true
 	kubectl delete -f integration-tests/deployment.yaml --context kind-test-cluster

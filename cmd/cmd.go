@@ -14,8 +14,10 @@ import (
 )
 
 var (
-	proxy   string
-	verbose bool
+	proxyByDefault  string
+	verbose         bool
+	enableByDefault bool
+	mutator         m.ImageProxyMutator
 )
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +37,7 @@ func handleMutate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// mutate the request
-	mutated, err := m.Mutate(body, m.Config{Proxy: proxy, Verbose: verbose})
+	mutated, err := mutator.Mutate(body)
 	if err != nil {
 		sendError(err, w)
 		return
@@ -60,15 +62,21 @@ func sendError(err error, w http.ResponseWriter) {
 var rootCmd = &cobra.Command{
 	Use:   "k8s-image-autoproxy",
 	Short: "Alter image name to replace docker.io to another repository",
-	Long: `This tool alter container specs to prefix images from docker.io with a custom proxy url
+	Long: `This tool alter container specs to prefix images from docker.io with a custom proxyByDefault url
 	
 Usage:
-  k8s-image-autoproxy --proxy proxy.io`,
+  k8s-image-autoproxy --proxyByDefault proxyByDefault.io`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
+		config := m.Config{DefaultProxy: proxyByDefault, Verbose: verbose, DefaultEnable: enableByDefault}
+		mutator = m.NewImageProxyMutator(config)
 
 		log.Println("Starting server ...")
+		log.Println("Configuration")
+		log.Printf("\tDefaultEnable: %t\n", config.DefaultEnable)
+		log.Printf("\tDefaultProxy: %s\n", config.DefaultProxy)
+		log.Printf("\tVerbose: %t\n", config.Verbose)
 
 		mux := http.NewServeMux()
 
@@ -91,14 +99,14 @@ Usage:
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Fatalln(err)
 		os.Exit(1)
 	}
 }
 
 func init() {
-	rootCmd.Flags().StringVarP(&proxy, "proxy", "p", "", "Proxy hostname to prefix all docker.io images.")
+	rootCmd.Flags().StringVarP(&proxyByDefault, "proxyByDefault", "p", "", "Proxy hostname to prefix all docker.io images.")
 	rootCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Print debug logs.")
-
-	_ = rootCmd.MarkFlagRequired("proxy")
+	rootCmd.Flags().BoolVarP(&enableByDefault, "enableByDefault", "e", false, "Enable in all namespace by default.")
+	_ = rootCmd.MarkFlagRequired("proxyByDefault")
 }

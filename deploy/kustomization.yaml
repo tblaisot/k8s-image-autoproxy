@@ -2,3 +2,5 @@ resources:
   - app.yaml
   - app-certs.yaml
   - webhooks.yaml
+  - security.yaml
+namespace: k8s-image-autoproxy
