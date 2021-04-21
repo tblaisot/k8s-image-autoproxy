@@ -1,15 +1,12 @@
 package mutate
 
 import (
-	"errors"
 	"fmt"
+
 	dockerparser "github.com/novln/docker-parser"
 	dockerparserdocker "github.com/novln/docker-parser/docker"
 	core "k8s.io/api/core/v1"
 )
-
-// ErrNotIngress will be used when the validating object is not an ingress.
-var ErrNotSupported = errors.New("object is not supported")
 
 func patchWithProxy(image string, proxy string) (newimage string, err error) {
 	newimage = image

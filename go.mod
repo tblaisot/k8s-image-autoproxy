@@ -1,6 +1,6 @@
 module github.com/tblaisot/k8s-image-autoproxy
 
-go 1.15
+go 1.16
 
 require (
 	github.com/novln/docker-parser v1.0.0
