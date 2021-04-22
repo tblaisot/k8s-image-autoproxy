@@ -103,15 +103,17 @@ func (m imageProxyMutator) Mutate(body []byte) ([]byte, error) {
 	p := []map[string]string{}
 
 	if ar != nil {
+
+		options, err := m.GetNamespaceOptions(ar.Namespace)
+		if err != nil {
+			return nil, err
+		}
+
 		switch ar.Kind.Kind {
 		case "Pod":
 			var pod *corev1.Pod
 			if err := json.Unmarshal(ar.Object.Raw, &pod); err != nil {
 				return nil, fmt.Errorf("unable unmarshal Pod json object %v", err)
-			}
-			options, err := m.GetNamespaceOptions(pod.Namespace)
-			if err != nil {
-				return nil, err
 			}
 			p = proxyPodSpec(options, pod.Spec, "/spec", p)
 		case "ReplicationController":
@@ -119,19 +121,11 @@ func (m imageProxyMutator) Mutate(body []byte) ([]byte, error) {
 			if err := json.Unmarshal(ar.Object.Raw, &replicationController); err != nil {
 				return nil, fmt.Errorf("unable unmarshal ReplicationController json object %v", err)
 			}
-			options, err := m.GetNamespaceOptions(replicationController.Namespace)
-			if err != nil {
-				return nil, err
-			}
 			p = proxyPodSpec(options, replicationController.Spec.Template.Spec, "/spec/template/spec", p)
 		case "Deployment":
 			var deployment *appsv1.Deployment
 			if err := json.Unmarshal(ar.Object.Raw, &deployment); err != nil {
 				return nil, fmt.Errorf("unable unmarshal Deployment json object %v", err)
-			}
-			options, err := m.GetNamespaceOptions(deployment.Namespace)
-			if err != nil {
-				return nil, err
 			}
 			p = proxyPodSpec(options, deployment.Spec.Template.Spec, "/spec/template/spec", p)
 		case "ReplicaSet":
@@ -139,19 +133,11 @@ func (m imageProxyMutator) Mutate(body []byte) ([]byte, error) {
 			if err := json.Unmarshal(ar.Object.Raw, &replicaSet); err != nil {
 				return nil, fmt.Errorf("unable unmarshal ReplicaSet json object %v", err)
 			}
-			options, err := m.GetNamespaceOptions(replicaSet.Namespace)
-			if err != nil {
-				return nil, err
-			}
 			p = proxyPodSpec(options, replicaSet.Spec.Template.Spec, "/spec/template/spec", p)
 		case "DaemonSet":
 			var daemonSet *appsv1.DaemonSet
 			if err := json.Unmarshal(ar.Object.Raw, &daemonSet); err != nil {
 				return nil, fmt.Errorf("unable unmarshal DaemonSet json object %v", err)
-			}
-			options, err := m.GetNamespaceOptions(daemonSet.Namespace)
-			if err != nil {
-				return nil, err
 			}
 			p = proxyPodSpec(options, daemonSet.Spec.Template.Spec, "/spec/template/spec", p)
 		case "StatefulSet":
@@ -159,29 +145,17 @@ func (m imageProxyMutator) Mutate(body []byte) ([]byte, error) {
 			if err := json.Unmarshal(ar.Object.Raw, &statefulSet); err != nil {
 				return nil, fmt.Errorf("unable unmarshal StatefulSet json object %v", err)
 			}
-			options, err := m.GetNamespaceOptions(statefulSet.Namespace)
-			if err != nil {
-				return nil, err
-			}
 			p = proxyPodSpec(options, statefulSet.Spec.Template.Spec, "/spec/template/spec", p)
 		case "CronJob":
 			var cronJob *batchv1beta1.CronJob
 			if err := json.Unmarshal(ar.Object.Raw, &cronJob); err != nil {
 				return nil, fmt.Errorf("unable unmarshal CronJob json object %v", err)
 			}
-			options, err := m.GetNamespaceOptions(cronJob.Namespace)
-			if err != nil {
-				return nil, err
-			}
 			p = proxyPodSpec(options, cronJob.Spec.JobTemplate.Spec.Template.Spec, "/spec/jobTemplate/spec/template/spec", p)
 		case "Job":
 			var job *batchv1.Job
 			if err := json.Unmarshal(ar.Object.Raw, &job); err != nil {
 				return nil, fmt.Errorf("unable unmarshal Job json object %v", err)
-			}
-			options, err := m.GetNamespaceOptions(job.Namespace)
-			if err != nil {
-				return nil, err
 			}
 			p = proxyPodSpec(options, job.Spec.Template.Spec, "/spec/template/spec", p)
 		default:
@@ -200,7 +174,6 @@ func (m imageProxyMutator) Mutate(body []byte) ([]byte, error) {
 		}
 
 		// parse the []map into JSON
-		var err error
 		resp.Patch, err = json.Marshal(p)
 
 		if err != nil {

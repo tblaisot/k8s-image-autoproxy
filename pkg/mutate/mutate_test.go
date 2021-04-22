@@ -199,7 +199,7 @@ func TestMutatesNamespaceOverride(t *testing.T) {
 				"version": "v1",
 				"resource": "pods"
 			},
-			"namespace": "default",
+			"namespace": "proxied",
 			"operation": "CREATE",
 			"userInfo": {
 				"username": "kubernetes-admin",
@@ -329,7 +329,7 @@ func TestMutatesNamespaceDisabled(t *testing.T) {
 				"version": "v1",
 				"resource": "pods"
 			},
-			"namespace": "default",
+			"namespace": "disabled",
 			"operation": "CREATE",
 			"userInfo": {
 				"username": "kubernetes-admin",
